@@ -2,7 +2,9 @@ extern crate core;
 
 use async_trait;
 use datafusion::arrow::datatypes::SchemaRef;
+use datafusion::arrow::ipc::reader::FileReader;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::arrow::util::pretty::pretty_format_batches;
 use datafusion::datasource::{TableProvider, TableType};
 use datafusion::error::Result;
 use datafusion::execution::context::TaskContext;
@@ -18,8 +20,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 use std::sync::Arc;
-use datafusion::arrow::ipc::reader::FileReader;
-use datafusion::arrow::util::pretty::pretty_format_batches;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -49,7 +49,7 @@ fn write_to_ipc(schema: SchemaRef, batches: Vec<RecordBatch>, filename: &str) ->
     for batch in &batches {
         w.write(batch)?;
     }
-    Ok(())
+    w.finish()
 }
 
 struct IpcTableProvider {
@@ -59,7 +59,10 @@ struct IpcTableProvider {
 
 impl IpcTableProvider {
     pub fn new(schema: SchemaRef, filename: &str) -> Self {
-        Self { schema, filename: filename.to_string() }
+        Self {
+            schema,
+            filename: filename.to_string(),
+        }
     }
 }
 
@@ -85,7 +88,7 @@ impl TableProvider for IpcTableProvider {
     ) -> Result<Arc<dyn ExecutionPlan>> {
         Ok(Arc::new(IpcPlan {
             schema: self.schema.clone(),
-            filename: self.filename.clone()
+            filename: self.filename.clone(),
         }))
     }
 }
@@ -93,7 +96,7 @@ impl TableProvider for IpcTableProvider {
 #[derive(Debug)]
 struct IpcPlan {
     schema: SchemaRef,
-    filename: String
+    filename: String,
 }
 
 impl ExecutionPlan for IpcPlan {

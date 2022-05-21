@@ -23,7 +23,7 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let filename = "/mnt/bigdata/tpcds/sf100-parquet/catalog_sales.dat/part-00006-e71f6b55-81a6-46c0-a9c6-432a555096e7-c000.snappy.parquet";
+    let filename = "test.parquet";
 
     // convert a parquet file to an IPC file
     let ctx = SessionContext::new();

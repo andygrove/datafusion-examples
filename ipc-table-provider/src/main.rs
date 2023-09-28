@@ -7,13 +7,15 @@ use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::arrow::util::pretty::pretty_format_batches;
 use datafusion::datasource::{TableProvider, TableType};
 use datafusion::error::Result;
-use datafusion::execution::context::TaskContext;
+use datafusion::execution::context::{SessionState, TaskContext};
 use datafusion::logical_expr::Expr;
 use datafusion::physical_expr::PhysicalSortExpr;
 use datafusion::physical_plan::common::IPCWriter;
 use datafusion::physical_plan::memory::MemoryStream;
 use datafusion::physical_plan::Partitioning;
-use datafusion::physical_plan::{ExecutionPlan, SendableRecordBatchStream, Statistics};
+use datafusion::physical_plan::{
+    DisplayAs, DisplayFormatType, ExecutionPlan, SendableRecordBatchStream, Statistics,
+};
 use datafusion::prelude::{ParquetReadOptions, SessionContext};
 use std::any::Any;
 use std::fs::File;
@@ -82,7 +84,8 @@ impl TableProvider for IpcTableProvider {
 
     async fn scan(
         &self,
-        _projection: &Option<Vec<usize>>,
+        _state: &SessionState,
+        _projection: Option<&Vec<usize>>,
         _filters: &[Expr],
         _limit: Option<usize>,
     ) -> Result<Arc<dyn ExecutionPlan>> {
@@ -146,5 +149,11 @@ impl ExecutionPlan for IpcPlan {
 
     fn statistics(&self) -> Statistics {
         todo!()
+    }
+}
+
+impl DisplayAs for IpcPlan {
+    fn fmt_as(&self, _t: DisplayFormatType, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "")
     }
 }
